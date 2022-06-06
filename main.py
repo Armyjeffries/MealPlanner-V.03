@@ -1,14 +1,20 @@
 # Lead: Chris 'CJ' Jeffries
-# MealPlanner v.03 - Last Update: 27 May 2022
+# MealPlanner v.034 - Last Update: 5 June 2022
 # Meal Planner will create a Meal Plan for a specified number of days by cycling through list of meals.
 # Once the Meal Plan is set, the program will build a Grocery_List for the user containing the sum of the ingredients
 # from the scheduled meals. -- > Complete v.03 Appx 27 May 2022 --> Program will successfully generate a Meal Plan without duplicates for
 # up the number days up to the amount of menu items. It will also sum the ingredients of all the meals, and generate a
-# grocery list.
+# grocery list. <-- Complete v.03 Appx 27 May 2022 <--
 # ------
-# More interaction w/ MealPlanner, ability to approve/modify plan. If modify, re-roll entire list, or change individual
-# items? Manually set items? Read available menu? Read available recipes?
+# More interaction w/ MealPlanner, ability to approve/modify plan. -- > Partial Complete v.031 --> Successfully loops for
+# approval of the generated meal prompt, allowing user to re-roll a specific day. <--  Partial Complete v.031 <--
 # ------
+# If modify, re-roll entire list, or change individual items? Manually set items? Read available menu? Read available recipes?
+# ------
+# ------ Added ability to pick meal replacement, by displaying current menu, or random choice. ------ Version.033
+# ------ Added prompt to write selections and grocery list to file "MealPlan.txt" stored on the root folder as the Parent
+
+
 # Ability to add/remove meals/ recipes to the menu?
 
 import random
@@ -90,7 +96,7 @@ SpagAndMeatballs = {
 }
 TexMex = {
   "Ground Beef (lbs)":1,
-  "Black Beans (can)":1,
+  "Black Beans (can)":2,
   "Salsa-Mild (oz)":12,
   "Shredded Cheddar (bag)":0.5,
   "Tortilla Chips (bag)":0.25,
@@ -161,13 +167,13 @@ BBQChicken = {
 
 #Meal Ideas: Stir Fry, Black Bean Quinoa Chili Bowl, G'Ma's Mac'N'Cheese,
 #Dictionary contain K,V pairs for "Selections">MealName; building link between "Selection">MealName>Ingredients
-mealList = {"1":"Honey Mustard Chicken w/ Quinoa Salas","2":"Tacos","3":"Chicken Green Bean Casserole",
+mealList = {"1":"Honey Mustard Chicken w/ Quinoa Salad","2":"Tacos","3":"Chicken Green Bean Casserole",
             "4":"Cheeseburgers and Fries","5":"Spaghetti and Meatballs","6":"Tex-Mex Casserole",
             "7":"Chicken and Peppers","8":"Philly Cheesesteak Peppers","9":"Balsamic Chicken","10":"Cheese Dip",
             "11":"Leftovers","12":"Chicken Enchilada Soup","13":"\"Turkey\" Taco Chili","14":"BBQ Chicken"}
 #Dictionary containing K,V pairs for MealName>Ingredients; building link between "Selection">MealName>Ingredients
 Meals = {
-  "Honey Mustard Chicken w/ Quinoa Salas": HoneyMustardChickenQuinoa,
+  "Honey Mustard Chicken w/ Quinoa Salad": HoneyMustardChickenQuinoa,
   "Tacos": Tacos,
   "Chicken Green Bean Casserole": ChickenGreenBeanCass,
   "Cheeseburgers and Fries": CheeseburgersAndFries,
@@ -184,30 +190,86 @@ Meals = {
 }
 ### The Program "starts" here
 Days = int(input("The number of days to build the Meal Plan for: "))
-groceryList = {"Ingredient": "\t\t\t\t\tAmount"}
-selectionList = [0]
+groceryList = {"Ingredient": "\t\tAmount"}
+
+selectionList = []
 for r in range(Days):
     selection = str(random.randint(1,14))
     while selection in selectionList:
         selection = str(random.randint(1,14))
-    MealName = mealList.get(selection)
-#    MealName = mealList.get(str(random.randint(1,14)))
+    selectionList.append(selection)
+
+while True:
+    for s in range(len(selectionList)):
+        MealName = mealList.get(selectionList[s])
+        ingredients = Meals.get(MealName)
+        myMealPlan = MealPlan(MealName, Days, ingredients)
+        print("Day",s+1,myMealPlan.getMealName())
+    print("________"*7)
+    approve = input("Do you wish to keep this meal plan? Y/N: ")
+    if approve in ("Y","y","Yes","yes","YES"):
+        break
+    if approve in ("N","n","No","no","NO"):
+        newDay = int(input("Which day would you like to change? ")) - 1
+        MealName = mealList.get(selectionList[newDay])
+        print("Day", newDay + 1, MealName, )
+        approve = input("Is this the meal you want to change? Y/N ")
+        if approve in ("N", "n", "No", "no", "NO"):
+            pass
+        if approve in ("Y","y","Yes","yes","YES"):
+            approve = int(input("Do you want to select a meal from the Menu, or let me pick?\n1: Manual Meal Select\n2: Pick for me\n:"))
+            try:
+                if approve == 1:
+                    for x,y in mealList.items():
+                        print(x,":",y)
+                    selection = input("Which Meal would you like to put in for Day "+str(newDay+1)+"? : ")
+                    while int(selection) not in range(1,14):
+                        raise ValueError
+                    selectionList[newDay] = selection
+                elif approve == 2:
+                    while selection in selectionList:
+                        selection = str(random.randint(1, 14))
+                    else:
+                        selectionList[newDay] = selection
+                        pass
+            except ValueError:
+                print("Must pick a Meal from the Menu. 1-14: ")
+                pass
+    if approve in ("N", "n", "No", "no", "NO"):
+        pass
+for s in range(len(selectionList)):
+    MealName = mealList.get(selectionList[s])
     ingredients = Meals.get(MealName)
     myMealPlan = MealPlan(MealName, Days, ingredients)
-    #groceryList.update(ingredients)
-    for x,y in ingredients.items():
+    for x, y in ingredients.items():
         if x in groceryList:
             z = groceryList[x]
-            groceryList.update({x:y+z})
+            groceryList.update({x: y + z})
         else:
-            groceryList.update({x:y})
-    selectionList.append(selection)
-#    print("Day",r+1,myMealPlan.getMealName(),selectionList[r+1]) #Alternate Print line to INCLUDE meal Selection Number
-    print("Day",r+1,myMealPlan.getMealName()) #Alternate Print line to EXCLUDE meal Selection Number
-    #print(myMealPlan.getIngredients())
-print("_____"*7)
-
+            groceryList.update({x: y})
+    #    print("Day",s+1,myMealPlan.getMealName(),selectionList[s]) #Alternate Print line to INCLUDE meal Selection Number
+    print("Day", s + 1, myMealPlan.getMealName())
+print("_____" * 7)
 
 print("Grocery List for the above meals:")
 for x,y in groceryList.items():
-    print(x,y)
+    print(x,"\t",y)
+print("_____" * 7)
+approve = input("Do you want to write this list to a file (to print)? ")
+
+if approve in ("Y","y","Yes","yes","YES"):
+    file = open("MealPlan.txt", "w")
+    for s in range(len(selectionList)):
+        MealName = mealList.get(selectionList[s])
+        ingredients = Meals.get(MealName)
+        myMealPlan = MealPlan(MealName, Days, ingredients)
+        file.write(str("\nDay "+str(s + 1)+" "+myMealPlan.getMealName()))  # Alternate Print line to EXCLUDE meal Selection Number
+    file.write("\n"+("_____"*7))
+    file.write("\nGrocery List for the above meals:")
+    for x, y in groceryList.items():
+        file.write("\n"+str(x)+" "+str(y))
+    file.write("\n"+("_____" * 7))
+
+
+
+
