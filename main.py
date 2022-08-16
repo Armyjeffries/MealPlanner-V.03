@@ -1,5 +1,5 @@
 # Lead: Chris 'CJ' Jeffries
-# MealPlanner v.034 - Last Update: 5 June 2022
+# MealPlanner v.034 - Last Update: 16 August 2022
 # Meal Planner will create a Meal Plan for a specified number of days by cycling through list of meals.
 # Once the Meal Plan is set, the program will build a Grocery_List for the user containing the sum of the ingredients
 # from the scheduled meals. -- > Complete v.03 Appx 27 May 2022 --> Program will successfully generate a Meal Plan without duplicates for
@@ -13,8 +13,9 @@
 # ------
 # ------ Added ability to pick meal replacement, by displaying current menu, or random choice. ------ Version.033
 # ------ Added prompt to write selections and grocery list to file "MealPlan.txt" stored on the root folder as the Parent
-
-
+#_______
+#_______ Added "Menu Loop" to allow adding display current Recipe Book, and exit options. _____ Version.034
+#
 # Ability to add/remove meals/ recipes to the menu?
 
 import random
@@ -52,10 +53,10 @@ class MealPlan():
         #self.__groceryList =
 
 HoneyMustardChickenQuinoa = {
-  "Chicken Breast (lbs)":2,
-  "Olive Oil (Tbsp)":4.5,
-  "Dijon Mustard (Tbsp)":1,
-  "Honey (Tbsp)":2,
+  "Chicken Breast":3,
+  "Olive Oil (Tbsp)":5,
+  "Dijon Mustard (Tbsp)":2,
+  "Honey (Tbsp)":4,
   "Cucumber":1,
   "Roma Tomatoes":2,
   "Green Bell Pepper":1,
@@ -81,7 +82,9 @@ ChickenGreenBeanCass = {
   "Mayo (soup can)" : .5,
   "Curry (tsp)" : 1,
   "Cheddar Cheese (block)":1,
-  "Parmesan Cheese (grated)(bottle)":0.25
+  "Parmesan Cheese (grated)(bottle)":0.25,
+  "Blueberry Muffins (4pk)":2,
+  "Cranberry Jelly (can)":1
 }
 CheeseburgersAndFries = {
   "Ground Beef (lbs)": 2,
@@ -189,87 +192,116 @@ Meals = {
   "BBQ Chicken": BBQChicken
 }
 ### The Program "starts" here
-Days = int(input("The number of days to build the Meal Plan for: "))
-groceryList = {"Ingredient": "\t\tAmount"}
-
-selectionList = []
-for r in range(Days):
-    selection = str(random.randint(1,14))
-    while selection in selectionList:
-        selection = str(random.randint(1,14))
-    selectionList.append(selection)
+#Setting initial  menuSelection variable
 
 while True:
-    for s in range(len(selectionList)):
-        MealName = mealList.get(selectionList[s])
-        ingredients = Meals.get(MealName)
-        myMealPlan = MealPlan(MealName, Days, ingredients)
-        print("Day",s+1,myMealPlan.getMealName())
-    print("________"*7)
-    approve = input("Do you wish to keep this meal plan? Y/N: ")
-    if approve in ("Y","y","Yes","yes","YES"):
-        break
-    if approve in ("N","n","No","no","NO"):
-        newDay = int(input("Which day would you like to change? ")) - 1
-        MealName = mealList.get(selectionList[newDay])
-        print("Day", newDay + 1, MealName, )
-        approve = input("Is this the meal you want to change? Y/N ")
-        if approve in ("N", "n", "No", "no", "NO"):
-            pass
-        if approve in ("Y","y","Yes","yes","YES"):
-            approve = int(input("Do you want to select a meal from the Menu, or let me pick?\n1: Manual Meal Select\n2: Pick for me\n:"))
-            try:
-                if approve == 1:
-                    for x,y in mealList.items():
-                        print(x,":",y)
-                    selection = input("Which Meal would you like to put in for Day "+str(newDay+1)+"? : ")
-                    while int(selection) not in range(1,14):
+    print("What would you like to do? Please enter a number for your selection: ")
+    try:
+        menuChoice = input("1: Display Recipe Book\n2: Build a Meal Plan\n3: Exit\n : ")    
+        while menuChoice == "1":
+            for x,y in mealList.items():
+                print(x,":",y)
+            print("\n\nWhat would you like to do? Please enter a number for your selection: ")
+            menuChoice = input("1: Display Recipe Book\n2: Build a Meal Plan\n3: Exit\n : ")
+        while menuChoice == "2":
+            while True:    
+                try:
+                    Days = int(input("The number of days to build the Meal Plan for: "))
+                    if Days > 14:
                         raise ValueError
-                    selectionList[newDay] = selection
-                elif approve == 2:
-                    while selection in selectionList:
-                        selection = str(random.randint(1, 14))
+                    elif Days < 1:
+                        raise ValueError
                     else:
-                        selectionList[newDay] = selection
+                        break
+                except ValueError:
+                    print("Sorry, at this time we can only accommodate Meal Plans up to " + str(
+                    len(mealList)) + " days (due to not repeating meals)")
+                    pass
+            groceryList = {"Ingredient": "\t\tAmount"}
+
+            selectionList = []
+            for r in range(Days):
+                selection = str(random.randint(1,14))
+                while selection in selectionList:
+                    selection = str(random.randint(1,14))
+                selectionList.append(selection)
+
+            while True:
+                for s in range(len(selectionList)):
+                    MealName = mealList.get(selectionList[s])
+                    ingredients = Meals.get(MealName)
+                    myMealPlan = MealPlan(MealName, Days, ingredients)
+                    print("Day",s+1,myMealPlan.getMealName())
+                print("________"*7)
+                approve = input("Do you wish to keep this meal plan? Y/N: ")
+                if approve in ("Y","y","Yes","yes","YES"):
+                    break
+                if approve in ("N","n","No","no","NO"):
+                    newDay = int(input("Which day would you like to change? ")) - 1
+                    MealName = mealList.get(selectionList[newDay])
+                    print("Day", newDay + 1, MealName, )
+                    approve = input("Is this the meal you want to change? Y/N ")
+                    if approve in ("N", "n", "No", "no", "NO"):
                         pass
-            except ValueError:
-                print("Must pick a Meal from the Menu. 1-14: ")
-                pass
-    if approve in ("N", "n", "No", "no", "NO"):
+                    if approve in ("Y","y","Yes","yes","YES"):
+                        approve = int(input("Do you want to select a meal from the Menu, or let me pick?\n1: Manual Meal Select\n2: Pick for me\n:"))
+                        try:
+                            if approve == 1:
+                                for x,y in mealList.items():
+                                    print(x,":",y)
+                                selection = input("Which Meal would you like to put in for Day "+str(newDay+1)+"? : ")
+                                while int(selection) not in range(1,14):
+                                    raise ValueError
+                                selectionList[newDay] = selection
+                            elif approve == 2:
+                                while selection in selectionList:
+                                    selection = str(random.randint(1, 14))
+                                else:
+                                    selectionList[newDay] = selection
+                                    pass
+                        except ValueError:
+                            print("Must pick a Meal from the Menu. 1-14: ")
+                            pass
+                if approve in ("N", "n", "No", "no", "NO"):
+                    pass
+            for s in range(len(selectionList)):
+                MealName = mealList.get(selectionList[s])
+                ingredients = Meals.get(MealName)
+                myMealPlan = MealPlan(MealName, Days, ingredients)
+                for x, y in ingredients.items():
+                    if x in groceryList:
+                        z = groceryList[x]
+                        groceryList.update({x: y + z})
+                    else:
+                        groceryList.update({x: y})
+            #    print("Day",s+1,myMealPlan.getMealName(),selectionList[s]) #Alternate Print line to INCLUDE meal Selection Number
+                print("Day", s + 1, myMealPlan.getMealName())
+            print("_____" * 7)
+
+            print("Grocery List for the above meals:")
+            for x,y in groceryList.items():
+                print(x,"\t",y)
+            print("_____" * 7)
+            approve = input("Do you want to write this list to a file (to print)? ")
+
+            if approve in ("Y","y","Yes","yes","YES"):
+                file = open("MealPlan.txt", "w")
+                for s in range(len(selectionList)):
+                    MealName = mealList.get(selectionList[s])
+                    ingredients = Meals.get(MealName)
+                    myMealPlan = MealPlan(MealName, Days, ingredients)
+                    file.write(str("\nDay "+str(s + 1)+" "+myMealPlan.getMealName()))  # Alternate Print line to EXCLUDE meal Selection Number
+                file.write("\n"+("_____"*7))
+                file.write("\nGrocery List for the above meals:")
+                for x, y in groceryList.items():
+                    file.write("\n"+str(x)+" "+str(y))
+                file.write("\n"+("_____" * 7))
+            menuChoice = "1"
+        while menuChoice == "3":
+            menuChoice = "0"
+            break
+    except Exception as e:
+        print(e)
         pass
-for s in range(len(selectionList)):
-    MealName = mealList.get(selectionList[s])
-    ingredients = Meals.get(MealName)
-    myMealPlan = MealPlan(MealName, Days, ingredients)
-    for x, y in ingredients.items():
-        if x in groceryList:
-            z = groceryList[x]
-            groceryList.update({x: y + z})
-        else:
-            groceryList.update({x: y})
-    #    print("Day",s+1,myMealPlan.getMealName(),selectionList[s]) #Alternate Print line to INCLUDE meal Selection Number
-    print("Day", s + 1, myMealPlan.getMealName())
-print("_____" * 7)
-
-print("Grocery List for the above meals:")
-for x,y in groceryList.items():
-    print(x,"\t",y)
-print("_____" * 7)
-approve = input("Do you want to write this list to a file (to print)? ")
-
-if approve in ("Y","y","Yes","yes","YES"):
-    file = open("MealPlan.txt", "w")
-    for s in range(len(selectionList)):
-        MealName = mealList.get(selectionList[s])
-        ingredients = Meals.get(MealName)
-        myMealPlan = MealPlan(MealName, Days, ingredients)
-        file.write(str("\nDay "+str(s + 1)+" "+myMealPlan.getMealName()))  # Alternate Print line to EXCLUDE meal Selection Number
-    file.write("\n"+("_____"*7))
-    file.write("\nGrocery List for the above meals:")
-    for x, y in groceryList.items():
-        file.write("\n"+str(x)+" "+str(y))
-    file.write("\n"+("_____" * 7))
-
-
-
-
+    if menuChoice == "0":
+        break
