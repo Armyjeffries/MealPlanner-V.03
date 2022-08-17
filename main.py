@@ -1,5 +1,5 @@
 # Lead: Chris 'CJ' Jeffries
-# MealPlanner v.034 - Last Update: 16 August 2022
+# MealPlanner v.034 - Last Update: 17 August 2022
 # Meal Planner will create a Meal Plan for a specified number of days by cycling through list of meals.
 # Once the Meal Plan is set, the program will build a Grocery_List for the user containing the sum of the ingredients
 # from the scheduled meals. -- > Complete v.03 Appx 27 May 2022 --> Program will successfully generate a Meal Plan without duplicates for
@@ -195,18 +195,41 @@ Meals = {
 #Setting initial  menuSelection variable
 
 while True:
-    print("What would you like to do? Please enter a number for your selection: ")
+    print("\n\n*** Main Menu ***\nWhat would you like to do? Please enter a number for your selection: ")
     try:
         menuChoice = input("1: Display Recipe Book\n2: Build a Meal Plan\n3: Exit\n : ")    
         while menuChoice == "1":
+            print("\n\n*** Recipe Book ***\nCurrent Meals:")
             for x,y in mealList.items():
-                print(x,":",y)
-            print("\n\nWhat would you like to do? Please enter a number for your selection: ")
+                print(x,":",y)    
+            print("\n\nWould you like to edit the Recipe Book?")
+            editChoice = input("Y/N : ")
+            try:
+                if editChoice in ("Y","y","Yes","yes","YES"):
+                    print("*** Editing Recipe Book ***\nWould you like to : ")
+                    editChoice = input("1: Add a recipe\n2: Block a recipe from meal selection\n3: Edit a recipe\n4: Exit\n : ")
+                    if editChoice == "1":
+                        print("Feature coming Soon")
+                        editChoice = "4"
+                    elif editChoice == "2":
+                        print("Feature coming Soon")
+                        editChoice = "4"
+                    elif editChoice == "3":
+                        print("Feature coming Soon")
+                        editChoice = "4"
+                    elif editChoice == "4":
+                        print("Exit to Main Menu")
+                        pass
+                    else:
+                        raise ValueError
+            except Exception as e:
+                print(e)
+                pass
             menuChoice = input("1: Display Recipe Book\n2: Build a Meal Plan\n3: Exit\n : ")
         while menuChoice == "2":
             while True:    
                 try:
-                    Days = int(input("The number of days to build the Meal Plan for: "))
+                    Days = int(input("\n\nPlease enter the number of days for the Meal Plan: "))
                     if Days > 14:
                         raise ValueError
                     elif Days < 1:
@@ -221,9 +244,9 @@ while True:
 
             selectionList = []
             for r in range(Days):
-                selection = str(random.randint(1,14))
+                selection = str(random.randint(1,len(mealList)))
                 while selection in selectionList:
-                    selection = str(random.randint(1,14))
+                    selection = str(random.randint(1,len(mealList)))
                 selectionList.append(selection)
 
             while True:
@@ -250,17 +273,17 @@ while True:
                                 for x,y in mealList.items():
                                     print(x,":",y)
                                 selection = input("Which Meal would you like to put in for Day "+str(newDay+1)+"? : ")
-                                while int(selection) not in range(1,14):
+                                while int(selection) not in range(1,len(mealList)):
                                     raise ValueError
                                 selectionList[newDay] = selection
                             elif approve == 2:
                                 while selection in selectionList:
-                                    selection = str(random.randint(1, 14))
+                                    selection = str(random.randint(1, len(mealList)))
                                 else:
                                     selectionList[newDay] = selection
                                     pass
                         except ValueError:
-                            print("Must pick a Meal from the Menu. 1-14: ")
+                            print("Must pick a Meal from the Menu. 1-"+str(len(mealList))+": ")
                             pass
                 if approve in ("N", "n", "No", "no", "NO"):
                     pass
